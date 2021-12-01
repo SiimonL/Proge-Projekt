@@ -28,15 +28,16 @@ number_font = pygame.font.Font(os.path.join('assets/fonts', 'Arvo-Bold.ttf'), 26
 levels = {}
 for i, file in enumerate(os.scandir('./assets/levels/')):
     with open(file) as f:
-        levels[i] = [line.strip().split(' ') for line in f.readlines()]
+        levels[i] = [list(map(int, line.strip().split(' '))) for line in f.readlines()]
 
 
 level = [
-    [1, 0, 0, 1, 1],
-    [1, 1, 1, 1, 0],
-    [0, 0, 0, 1, 0],
-    [0, 0, 1, 0, 1],
-    [1, 1, 1, 1, 1]]
+    [1, 0, 0, 1, 1, 1],
+    [1, 1, 1, 1, 0, 1],
+    [0, 0, 0, 1, 0, 1],
+    [0, 0, 1, 0, 1, 1],
+    [1, 1, 1, 1, 1, 1],
+    [1, 0, 0, 0, 0, 1]]
 
 
 #numtest = number_font.render('1 2 3', True, BLACK)
@@ -199,6 +200,8 @@ class Grid:
 
 
 
+print(level)
+print(levels[0])
 
 grid = Grid(levels[0], GRID_START)
 print(number_font.get_height())
