@@ -25,6 +25,12 @@ mouse_pos = (0, 0)
 cross_img = pygame.image.load(os.path.join('assets/images/' 'cross.png'))
 number_font = pygame.font.Font(os.path.join('assets/fonts', 'Arvo-Bold.ttf'), 26)
 
+levels = {}
+for i, file in enumerate(os.scandir('./assets/levels/')):
+    with open(file) as f:
+        levels[i] = [line.strip().split(' ') for line in f.readlines()]
+
+
 level = [
     [1, 0, 0, 1, 1],
     [1, 1, 1, 1, 0],
@@ -49,7 +55,6 @@ def text(msg, color, x, y, origin='topleft'):
     screen.blit(text_surface, text_rect)
 
 class Grid:
-    
     def __init__(self, matrix: list, start_pos: tuple) -> None:
         self.matrix = matrix
         self.start_pos = start_pos
@@ -62,6 +67,9 @@ class Grid:
         self.correct_positions = set()# (x, y)
         self.side_numbers = [] # From top to bottom
         self.top_numbers = []  # From left to right
+        self.get_side_numbers()
+        self.get_top_numbers()
+        self.get_correct_positions()
 
     def get_side_numbers(self):
         display_numbers = []
@@ -192,10 +200,7 @@ class Grid:
 
 
 
-grid = Grid(level, GRID_START)
-grid.get_side_numbers()
-grid.get_top_numbers()
-grid.get_correct_positions()
+grid = Grid(levels[0], GRID_START)
 print(number_font.get_height())
 while True:
     
