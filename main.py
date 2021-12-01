@@ -1,5 +1,5 @@
 
-import pygame, os, sys, time
+import pygame, os, sys, time, random
 from numpy import transpose
 
 pygame.init()
@@ -10,7 +10,7 @@ screen = pygame.display.set_mode(SIZE)
 
 
 FPS = 60
-GRID_START = (200, 200)
+GRID_START = (150, 150)
 CELL_SIZE = 40
 CELL_GAP = 2
 CELL_WIDTH = 3
@@ -65,12 +65,9 @@ class Grid:
         self.col_len = len(matrix)
         self.cross_positions = set()  # (x, y)
         self.marker_positions = set() # (x, y)
-        self.correct_positions = set()# (x, y)
-        self.side_numbers = [] # From top to bottom
-        self.top_numbers = []  # From left to right
-        self.get_side_numbers()
-        self.get_top_numbers()
-        self.get_correct_positions()
+        self.correct_positions = self.get_correct_positions() # (x, y)
+        self.side_numbers = self.get_side_numbers() # From top to bottom
+        self.top_numbers = self.get_top_numbers()  # From left to right
 
     def get_side_numbers(self):
         display_numbers = []
@@ -88,8 +85,7 @@ class Grid:
                 row_numbers.append(str(counter))
             
             display_numbers.append(row_numbers)
-       
-        self.side_numbers = display_numbers
+        return display_numbers
     
     def get_top_numbers(self):
         transposed_matrix = transpose(self.matrix)
@@ -108,18 +104,19 @@ class Grid:
                 row_numbers.append(str(counter))
             
             display_numbers.append(row_numbers)
-        
-        self.top_numbers = display_numbers
+        return display_numbers
     
     def get_correct_positions(self):
+        solution = set()
         y = self.origin_y
         for i, row in enumerate(self.matrix):
             x = self.origin_x
             for j, el in enumerate(row):
                 if el == 1:
-                    self.correct_positions.add((x+(CELL_SIZE*j), y+(CELL_SIZE*i)))
+                    solution.add((x+(CELL_SIZE*j), y+(CELL_SIZE*i)))
                 x += CELL_GAP
             y += CELL_GAP
+        return solution
     
     def draw_grid(self):
         for cross in self.cross_positions:
@@ -145,7 +142,7 @@ class Grid:
 
     def get_cell(self, coordinates: tuple):
         y = self.origin_y
-        for i, row in enumerate(level):
+        for i, row in enumerate(self.matrix):
             x = self.origin_x
             for j, el in enumerate(row):
                 if x+(CELL_SIZE*j) <= coordinates[0] <= x+(CELL_SIZE*j)+CELL_SIZE and \
@@ -199,47 +196,44 @@ class Grid:
                 text(el, BLACK, self.origin_x+CELL_SIZE/2+(CELL_GAP+CELL_SIZE)*i, self.origin_y-21-37*j,'center')
 
 
-
-print(level)
-print(levels[0])
-
-grid = Grid(levels[0], GRID_START)
-print(number_font.get_height())
 while True:
-    
-    #Checking for events
-    for event in pygame.event.get():
+    random_level = levels[random.randint(0,len(levels)-1)]
+    grid = Grid(random_level, GRID_START)
+    while True:
         
-        if event.type == pygame.QUIT: sys.exit()
-        if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_q: sys.exit()
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            mouse_pos = pygame.mouse.get_pos()
-            if event.button == 1: # Left Click
-                # Paint current cell marker color
-                if grid.is_hovering_over(mouse_pos):
-                    grid.update_markers(mouse_pos)
-            if event.button == 3: # Right Click
-                # add 'cross.png' to current cell
-                if grid.is_hovering_over(mouse_pos):
-                    grid.update_crosses(mouse_pos)
-    
-    #Updating variables and drawing objects
-    mouse_pos = pygame.mouse.get_pos()
-    if grid.is_hovering_over(mouse_pos):
-        grid.draw_hover_highlight(mouse_pos)
-    grid.draw_grid()
-    grid.render_indicators()
+        #Checking for events
+        for event in pygame.event.get():
+            
+            if event.type == pygame.QUIT: sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_q: sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                if event.button == 1: # Left Click
+                    # Paint current cell marker color
+                    if grid.is_hovering_over(mouse_pos):
+                        grid.update_markers(mouse_pos)
+                if event.button == 3: # Right Click
+                    # add 'cross.png' to current cell
+                    if grid.is_hovering_over(mouse_pos):
+                        grid.update_crosses(mouse_pos)
+        
+        #Updating variables and drawing objects
+        mouse_pos = pygame.mouse.get_pos()
+        if grid.is_hovering_over(mouse_pos):
+            grid.draw_hover_highlight(mouse_pos)
+        grid.draw_grid()
+        grid.render_indicators()
 
-    if grid.check_win():
-        break
-    
-    #Updating the screen
-    pygame.display.flip()
-    screen.fill(WHITE)
-    
-    #Add delay
-    time.sleep(1/FPS)
+        if grid.check_win():
+            break
+        
+        #Updating the screen
+        pygame.display.flip()
+        screen.fill(WHITE)
+        
+        #Add delay
+        time.sleep(1/FPS)
 
 
 sys.exit()
