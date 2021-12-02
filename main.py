@@ -1,6 +1,7 @@
 
 import pygame, os, sys, time, random
 from numpy import transpose
+from pygame import mouse
 
 pygame.init()
 
@@ -10,7 +11,7 @@ screen = pygame.display.set_mode(SIZE)
 
 
 FPS = 60
-GRID_START = (150, 150)
+GRID_START = (150, 200)
 CELL_SIZE = 40
 CELL_GAP = 2
 CELL_WIDTH = 3
@@ -20,6 +21,8 @@ WHITE = (255, 255, 255)
 GRAY = (150, 150, 150, 0.5)
 # Marker Color
 DARK_GRAY = (80, 80, 80)
+# Grid Background
+LIGHT_GRAY = (222, 222, 222)
 
 mouse_pos = (0, 0)
 cross_img = pygame.image.load(os.path.join('assets/images/' 'cross.png'))
@@ -30,18 +33,6 @@ for i, file in enumerate(os.scandir('./assets/levels/')):
     with open(file) as f:
         levels[i] = [list(map(int, line.strip().split(' '))) for line in f.readlines()]
 
-
-level = [
-    [1, 0, 0, 1, 1, 1],
-    [1, 1, 1, 1, 0, 1],
-    [0, 0, 0, 1, 0, 1],
-    [0, 0, 1, 0, 1, 1],
-    [1, 1, 1, 1, 1, 1],
-    [1, 0, 0, 0, 0, 1]]
-
-
-#numtest = number_font.render('1 2 3', True, BLACK)
-
 def text(msg, color, x, y, origin='topleft'):
     text_surface = number_font.render(msg, True, color)
     text_rect = text_surface.get_rect()
@@ -51,7 +42,6 @@ def text(msg, color, x, y, origin='topleft'):
         text_rect.topright = (x, y)
     elif origin == 'center':
         text_rect.center = (x, y)
-
 
     screen.blit(text_surface, text_rect)
 
@@ -118,7 +108,18 @@ class Grid:
             y += CELL_GAP
         return solution
     
-    def draw_grid(self):
+    def draw_grid(self, mouse_pos: tuple):
+        y = self.origin_y
+        for i, row in enumerate(self.matrix):
+            x = self.origin_x
+            for j, el in enumerate(row):
+                pygame.draw.rect(screen, WHITE, pygame.Rect(x+(CELL_SIZE*j),y+(CELL_SIZE*i), CELL_SIZE, CELL_SIZE), border_radius=4)
+                x += CELL_GAP
+            y += CELL_GAP
+        
+        if self.is_hovering_over(mouse_pos):
+            self.draw_hover_highlight(mouse_pos)
+        
         for cross in self.cross_positions:
             screen.blit(cross_img, cross)
     
@@ -129,9 +130,18 @@ class Grid:
         for i, row in enumerate(self.matrix):
             x = self.origin_x
             for j, el in enumerate(row):
-                pygame.draw.rect(screen, BLACK, pygame.Rect(x+(CELL_SIZE*j),y+(CELL_SIZE*i), CELL_SIZE, CELL_SIZE), CELL_WIDTH, border_radius=4)
+                pygame.draw.rect(screen, BLACK, pygame.Rect(x+(CELL_SIZE*j),y+(CELL_SIZE*i), CELL_SIZE, CELL_SIZE), width=CELL_WIDTH, border_radius=4)
                 x += CELL_GAP
             y += CELL_GAP
+    
+    def draw_bounding_box(self, startx: int, starty: int):
+        dx = (self.origin_x + (CELL_SIZE*self.row_len + CELL_GAP*self.row_len-1)) - startx
+        dy = (self.origin_y + (CELL_SIZE*self.col_len + CELL_GAP*self.col_len-1)) - starty
+        pygame.draw.rect(screen, LIGHT_GRAY, pygame.Rect(startx, starty, dx+5, dy+5), border_radius=5)
+        pygame.draw.rect(screen, BLACK, pygame.Rect(startx, starty, dx+5, dy+5), width=3, border_radius=5)
+
+        pygame.draw.line(screen, BLACK, (startx, self.origin_y-5), (startx+dx, self.origin_y-5), width=3)
+        pygame.draw.line(screen, BLACK, (self.origin_x-5, starty), (self.origin_x-5, starty+dy), width=3)
 
     def draw_hover_highlight(self, mouse_pos: tuple):
         coordinates = self.get_cell(mouse_pos)
@@ -188,7 +198,7 @@ class Grid:
 
     def render_indicators(self):
         for i, row in enumerate(self.side_numbers):
-            text('  '.join(row), BLACK, self.origin_x-5, self.origin_y+4+(CELL_GAP+CELL_SIZE)*i, 'topright')
+            text('   '.join(row), BLACK, self.origin_x-15, self.origin_y+4+(CELL_GAP+CELL_SIZE)*i, 'topright')
         
         for i, row in enumerate(self.top_numbers):
             rev_row = list(reversed(row))
@@ -196,9 +206,11 @@ class Grid:
                 text(el, BLACK, self.origin_x+CELL_SIZE/2+(CELL_GAP+CELL_SIZE)*i, self.origin_y-21-37*j,'center')
 
 
+
 while True:
     random_level = levels[random.randint(0,len(levels)-1)]
-    grid = Grid(random_level, GRID_START)
+    #grid = Grid(random_level, GRID_START)
+    grid = Grid(levels[4], GRID_START)
     while True:
         
         #Checking for events
@@ -212,17 +224,20 @@ while True:
                 if event.button == 1: # Left Click
                     # Paint current cell marker color
                     if grid.is_hovering_over(mouse_pos):
+                        #Adds the topleft coordinates of the cell the mouse is currently
+                        #Hovering over to the list of markers, that get drawn in the next step
                         grid.update_markers(mouse_pos)
                 if event.button == 3: # Right Click
                     # add 'cross.png' to current cell
                     if grid.is_hovering_over(mouse_pos):
+                        #Adds the topleft coordinates of the cell the mouse is currently
+                        #Hovering over to the list of crosses, that get rendered in the next step
                         grid.update_crosses(mouse_pos)
         
         #Updating variables and drawing objects
+        grid.draw_bounding_box(40, 50)
         mouse_pos = pygame.mouse.get_pos()
-        if grid.is_hovering_over(mouse_pos):
-            grid.draw_hover_highlight(mouse_pos)
-        grid.draw_grid()
+        grid.draw_grid(mouse_pos)
         grid.render_indicators()
 
         if grid.check_win():
