@@ -168,27 +168,27 @@ class Grid:
     
 
     # Updates the list of crosses based on the given mouse position (Called whenever the left mouse button is pressed)
-    def update_crosses(self, mouse_pos: tuple):
+    def update_crosses(self, mouse_pos: tuple, draging=False):
         coordinates = self.get_cell(mouse_pos)
         if coordinates is None:
             return
         else:
             if coordinates in self.marker_positions:
                 return
-            elif coordinates in self.cross_positions:
+            elif coordinates in self.cross_positions and not draging:
                 self.cross_positions.remove(coordinates)
             else:
                 self.cross_positions.add(coordinates)
     
     # Updates the list of markers based on the given mouse position (Called whenever the right mouse button is pressed)
-    def update_markers(self, mouse_pos: tuple):
+    def update_markers(self, mouse_pos: tuple, draging=False):
         coordinates = self.get_cell(mouse_pos)
         if coordinates is None:
             return
         else:
             if coordinates in self.cross_positions:
                 return
-            elif coordinates in self.marker_positions:
+            elif coordinates in self.marker_positions and not draging:
                 self.marker_positions.remove(coordinates)
             else:
                 self.marker_positions.add(coordinates)
@@ -215,28 +215,33 @@ while True:
         
         #Checking for events
         for event in pygame.event.get():
-            
+            mouse_pos = pygame.mouse.get_pos()
+
             if event.type == pygame.QUIT: sys.exit()
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_q: sys.exit()
+            
             if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
                 if event.button == 1: # Left Click
-                    # Paint current cell marker color
                     if grid.is_hovering_over(mouse_pos):
-                        #Adds the topleft coordinates of the cell the mouse is currently
-                        #Hovering over to the list of markers, that get drawn in the next step
                         grid.update_markers(mouse_pos)
                 if event.button == 3: # Right Click
-                    # add 'cross.png' to current cell
                     if grid.is_hovering_over(mouse_pos):
-                        #Adds the topleft coordinates of the cell the mouse is currently
-                        #Hovering over to the list of crosses, that get rendered in the next step
                         grid.update_crosses(mouse_pos)
+            
+            grid_cell = grid.get_cell(mouse_pos)
+            if grid_cell not in grid.marker_positions and grid_cell not in grid.cross_positions:
+                if pygame.mouse.get_pressed()[0]:
+                    if grid.is_hovering_over(mouse_pos):
+                        grid.update_markers(mouse_pos, draging=True)
+                elif pygame.mouse.get_pressed()[2]:
+                    if grid.is_hovering_over(mouse_pos):
+                        grid.update_crosses(mouse_pos, draging=True)
+        
         
         #Updating variables and drawing objects
+        
         grid.draw_bounding_box(40, 50)
-        mouse_pos = pygame.mouse.get_pos()
         grid.draw_grid(mouse_pos)
         grid.render_indicators()
 
@@ -248,7 +253,7 @@ while True:
         screen.fill(WHITE)
         
         #Add delay
-        time.sleep(1/FPS)
+        time.sleep(round(1/FPS, 3))
 
 
 sys.exit()
