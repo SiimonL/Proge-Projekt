@@ -23,23 +23,27 @@ MARKER_COLOR = (80, 80, 80)
 GRID_BACKGROUND = (222, 222, 222)
 
 mouse_pos = (0, 0)
+# Piltide sisse laadimine
 cross_img = pygame.image.load(os.path.join('assets/images/' 'cross.png'))
 example_img = pygame.image.load(os.path.join('assets/images', 'example.png'))
 example2_img = pygame.image.load(os.path.join('assets/images', 'example2.png'))
 marker_ex = pygame.image.load(os.path.join('assets/images', 'marker_ex.png'))
 cross_ex = pygame.image.load(os.path.join('assets/images', 'cross_ex.png'))
 
+# Fontide sisse laadimine
 number_font = pygame.font.Font(os.path.join('assets/fonts', 'Arvo-Bold.ttf'), 26)
 tutorial_font = pygame.font.Font(os.path.join('assets/fonts', 'BakbakOne-Regular.ttf'), 24)
 text_font = pygame.font.Font(os.path.join('assets/fonts', 'BakbakOne-Regular.ttf'), 26)
 big_font = pygame.font.Font(os.path.join('assets/fonts', 'BakbakOne-Regular.ttf'), 70)
 
+# levelite failist sõnastikku lugemine
 levels = {}
 for i, file in enumerate(os.scandir('./assets/levels/')):
     with open(file) as f:
         levels[i] = [list(map(int, line.strip().split(' '))) for line in f.readlines()]
 level_order = random.sample(range(len(levels)), len(levels))
 
+# Lihtne funktsioon ekraanile teksti kuvamiseks
 def text(msg: str, color: tuple, x: int, y: int, font: pygame.font.Font, origin='topleft', background=None):
     text_surface = font.render(msg, True, color, background)
     text_rect = text_surface.get_rect()
@@ -56,6 +60,8 @@ def text(msg: str, color: tuple, x: int, y: int, font: pygame.font.Font, origin=
 
     screen.blit(text_surface, text_rect)
 
+
+# Esimenüü
 def main_menu():
     while True:
         screen.fill(WHITE)
@@ -79,6 +85,8 @@ def main_menu():
         
         time.sleep(round(10/FPS, 3))
 
+
+# Pausimenüü
 def esc_menu():
     text('Q - Lõpeta mängimine.      ESC - Mängi edasi', BLACK, 10, 5, text_font)
     text('PAUS!', ORANGE, 300, 300, big_font, origin='center')
@@ -95,6 +103,7 @@ def esc_menu():
 
         time.sleep(round(10/FPS, 3))
 
+# Juhend
 def instructions():
     screen.fill(WHITE)
     text('Mängu eesmärk on täita terve ruudustik korrektselt.', BLACK, 10, 10, tutorial_font)
@@ -127,6 +136,7 @@ def instructions():
         
         time.sleep(round(5/FPS, 3))
 
+# Võidu ekraan
 def win_sequence():
     text('Hästi!', ORANGE, 300, 300, big_font, origin='center')
     pygame.display.flip()
