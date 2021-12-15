@@ -8,7 +8,9 @@ pygame.init()
 
 SIZE = (600, 600)
 screen = pygame.display.set_mode(SIZE)
-
+pygame.display.set_caption('Nonogram')
+logo = pygame.image.load(os.path.join('assets/images', 'logo.png'))
+pygame.display.set_icon(logo)
 
 FPS = 60
 GRID_START = (150, 200)
