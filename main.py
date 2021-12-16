@@ -334,35 +334,30 @@ while True:
         text('MÄNG LÄBI!', ORANGE, 300, 300, big_font, origin='center')
         text(f'Lõpetasite kõik {completed} levelit!', BLACK, 300, 350, text_font, origin='center')
         pygame.display.flip()
-        time.sleep(5)
+        time.sleep(4)
         sys.exit()
 
     grid = Grid(levels[level_order[completed]], GRID_START)
     #grid = Grid(levels[5], GRID_START)
     while True:
-        
         # Eventide kuulamine
         for event in pygame.event.get():
-            
             if event.type == pygame.QUIT: sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 if event.button == 1: # Left Click
                     if grid.is_hovering_over(mouse_pos):
                         # Lisab ruudu ülemise vasaku nurga koordinaadid mille kohal hiir
-                        # praeguselt on, markerite listi (need joonistatakse real 321 meetodiga draw_grid)
+                        # praeguselt on, markerite listi (need joonistatakse real 366 meetodiga draw_grid)
                         grid.update_markers(mouse_pos)
                 elif event.button == 3: # Right Click
                     if grid.is_hovering_over(mouse_pos):
                         # Lisab ruudu ülemise vasaku nurga koordinaadid mille kohal hiir
-                        # praeguselt on, ristide listi (need joonistatakse real 321 meetodiga draw_grid)
+                        # praeguselt on, ristide listi (need joonistatakse real 366 meetodiga draw_grid)
                         grid.update_crosses(mouse_pos)
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     esc_menu()
-
-
-
         # Muutujate uuendamine ja ekraani uuendamine
         screen.fill(WHITE)
 
@@ -380,8 +375,6 @@ while True:
             win_sequence()
             completed += 1
             break
-        
-        #Add delay
         time.sleep(1/FPS)
 
 sys.exit()
